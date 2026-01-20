@@ -6,14 +6,14 @@ Bu proje, Web Tabanlı Programlama dersi için hazırlanmış, kargoların uçta
 
 ---
 
-## ✨ Özellikler (Features)
+## ✨ Özellikler
 
 * **🚚 Kargo Yönetimi:** Yeni kargo kaydı oluşturma, listeleme ve detay görüntüleme.
 * **📍 Canlı Harita Entegrasyonu:** Leaflet.js ve OpenStreetMap kullanılarak kargoların gönderici ve alıcı şehirleri arasında görsel rota takibi.
 * **📜 Hareket Geçmişi:** Kargonun hangi tarihte, nerede ve hangi durumda olduğunu gösteren şık bir zaman çizelgesi.
 * **📱 QR Kod Desteği:** Her kargo için otomatik üretilen QR kodlar ile mobil cihazlardan hızlı sorgulama.
 * **🎨 Modern Arayüz:** Bootstrap 5 ve özel CSS gradyanları ile tasarlanmış, kullanıcı dostu dashboard.
-* **🔒 Güvenlik:** CSRF saldırılarına karşı **ValidateAntiForgeryToken** koruması.
+* **🔒 Güvenlik:** Saldırılara karşı **ValidateAntiForgeryToken** koruması.
 
 ---
 
