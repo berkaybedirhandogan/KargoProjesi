@@ -1,0 +1,262 @@
+@model IEnumerable<KargoTakibi.Models.Hareket>
+
+@{
+    ViewData["Title"] = "Kargo Hareketleri";
+    var kargoId = Model.FirstOrDefault()?.KargoID;
+}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --timeline-line: #e2e8f0;
+        --timeline-dot: #cbd5e0;
+        --timeline-active: #667eea;
+    }
+
+    body {
+        background-color: #f3f4f6;
+    }
+
+    .main-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        background: white;
+        overflow: hidden;
+    }
+
+    .card-header-custom {
+        background: var(--primary-gradient);
+        padding: 2rem;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .status-badge {
+        padding: 5px 15px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .status-hazirlaniyor {
+        background: #e0e7ff;
+        color: #4338ca;
+    }
+
+    .status-yolda {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-teslim {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-hata {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    #kargoHarita {
+        height: 250px;
+        width: 100%;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        border: 1px solid #edf2f7;
+    }
+
+    .timeline-container {
+        padding: 20px 20px 20px 40px;
+        position: relative;
+    }
+
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 29px;
+            top: 30px;
+            bottom: 50px;
+            width: 2px;
+            background: var(--timeline-line);
+        }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 2.5rem;
+    }
+
+    .timeline-dot {
+        position: absolute;
+        left: -41px;
+        top: 5px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: white;
+        border: 4px solid var(--timeline-dot);
+        z-index: 2;
+    }
+
+    .timeline-item:first-child .timeline-dot {
+        border-color: var(--timeline-active);
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+    }
+
+    .timeline-content {
+        background: #f8fafc;
+        padding: 1.2rem;
+        border-radius: 15px;
+        border: 1px solid #edf2f7;
+    }
+
+    .qr-box {
+        text-align: center;
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 15px;
+        border: 1px dashed #cbd5e0;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="main-card">
+                <div class="card-header-custom">
+                    <div>
+                        <h3 class="mb-1 fw-bold"><i class="bi bi-activity me-2"></i>Hareket Geçmişi</h3>
+                        <p class="mb-0 opacity-75 small">Takip No: #@kargoId</p>
+                    </div>
+                    <a asp-controller="Kargo" asp-action="Index" class="btn btn-light btn-sm rounded-pill px-3">
+                        <i class="bi bi-arrow-left"></i> Geri
+                    </a>
+                </div>
+
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3 text-muted"><i class="bi bi-map me-2"></i>Canlı Rota İzleme</h6>
+                    <div id="kargoHarita"></div>
+
+                    @if (Model.Any())
+                    {
+                        <div class="timeline-container">
+                            @foreach (var hareket in Model.OrderByDescending(x => x.Tarih))
+                            {
+                                string statusClass = hareket.Durum switch
+                                {
+                                    "Kabul Edildi" => "status-hazirlaniyor",
+                                    "Yolda" => "status-yolda",
+                                    "Teslim Edildi" => "status-teslim",
+                                    _ => "status-hata"
+                                };
+
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <div class="timeline-content">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="status-badge @statusClass">@hareket.Durum</span>
+                                            <small class="text-muted">@hareket.Tarih.ToString("HH:mm")</small>
+                                        </div>
+                                        <div class="fw-bold small">@hareket.Tarih.ToString("dd MMMM yyyy, dddd")</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="main-card p-4">
+                <div class="qr-box mb-4 shadow-sm border-0 bg-white">
+                    <h6 class="fw-bold mb-3 small text-uppercase text-primary">
+                        <i class="bi bi-qr-code-scan me-2"></i>Dijital Takip Barkodu
+                    </h6>
+
+                    @{
+                        var request = ViewContext.HttpContext.Request;
+                        var url = $"{request.Scheme}://{request.Host}{Url.Action("KargoHareketleri", "Hareket", new { id = kargoId })}";
+                    }
+
+                    <div class="qr-container p-2 d-inline-block border rounded-3 bg-white">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=@System.Net.WebUtility.UrlEncode(url)"
+                             alt="Kargo Takip QR"
+                             class="img-fluid rounded"
+                             style="min-width: 160px;" />
+                    </div>
+
+                    <p class="mt-3 small text-muted mb-0">
+                        Bu barkodu okutarak kargo hareketlerine mobil cihazınızdan anlık erişebilirsiniz.
+                    </p>
+                    <div class="mt-2 badge bg-light text-dark border fw-normal">ID: #@kargoId</div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <a asp-action="YeniHareket" asp-route-id="@kargoId" class="btn btn-primary rounded-pill py-2 fw-bold shadow-sm">
+                        <i class="bi bi-plus-lg me-1"></i> Yeni Hareket Ekle
+                    </a>
+                </div>
+            </div>
+        </div>
+
+<script>
+    var map = L.map('kargoHarita').setView([39.9334, 32.8597], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    var gondericiSehir = "@Html.Raw(ViewBag.GondericiSehir)";
+     var aliciSehir = "@Html.Raw(ViewBag.AliciSehir)";
+
+     console.log("Düzeltilmiş Şehirler:", gondericiSehir, aliciSehir);
+    async function getCoordinates(city) {
+        if (!city || city === "") return null;
+        try {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}&countrycodes=tr&limit=1`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data && data.length > 0) {
+                console.log(city + " bulundu:", data[0].lat, data[0].lon);
+                return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+            }
+        } catch (error) {
+            console.error("API Hatası:", city, error);
+        }
+        return null;
+    }
+
+    async function haritayiCiz() {
+        console.log("Aranan Şehirler:", gondericiSehir, "->", aliciSehir);
+
+        const coords1 = await getCoordinates(gondericiSehir);
+        const coords2 = await getCoordinates(aliciSehir);
+
+        if (coords1 && coords2) {
+            L.marker(coords1).addTo(map).bindPopup('Çıkış: ' + gondericiSehir);
+            L.marker(coords2).addTo(map).bindPopup('Varış: ' + aliciSehir);
+
+            var latlngs = [coords1, coords2];
+            var polyline = L.polyline(latlngs, {
+                color: '#667eea',
+                weight: 5,
+                opacity: 0.6,
+                dashArray: '10, 15'
+            }).addTo(map);
+
+            map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+        } else {
+            if (!coords1) console.error("Gönderici şehri bulunamadı: " + gondericiSehir);
+            if (!coords2) console.error("Alıcı şehri bulunamadı: " + aliciSehir);
+        }
+    }
+
+    haritayiCiz();
+</script>

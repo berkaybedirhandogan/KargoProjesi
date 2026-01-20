@@ -1,0 +1,238 @@
+@model IEnumerable<KargoTakibi.Models.Kargo>
+
+@{
+    ViewData["Title"] = "Kargo Yönetimi";
+}
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --card-bg: #ffffff;
+        --table-hover: #f8f9fa;
+    }
+
+    body {
+        background-color: #f3f4f6;
+    }
+
+    .main-card {
+        background: var(--card-bg);
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .card-header-custom {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2rem;
+        border-radius: 20px 20px 0 0;
+        position: relative;
+    }
+
+    .btn-add-custom {
+        background: white;
+        color: #764ba2;
+        border: none;
+        border-radius: 50px;
+        padding: 10px 25px;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+        .btn-add-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            color: #667eea;
+        }
+
+    .table-custom thead th {
+        border-top: none;
+        border-bottom: 2px solid #eee;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #8898aa;
+        padding-bottom: 15px;
+    }
+
+    .table-custom tbody tr {
+        transition: all 0.2s ease;
+    }
+
+        .table-custom tbody tr:hover {
+            background-color: var(--table-hover);
+            transform: scale(1.005);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+            z-index: 2;
+            position: relative;
+        }
+
+    .table-custom td {
+        vertical-align: middle;
+        padding: 1.2rem 1rem;
+        border-bottom: 1px solid #f1f1f1;
+        color: #525f7f;
+        font-weight: 500;
+    }
+
+    .status-badge {
+        padding: 8px 12px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+        .status-badge.primary {
+            background-color: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .status-badge.success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.warning {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.info {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+    .action-btn {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 3px;
+        transition: all 0.2s;
+        border: none;
+    }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+    .btn-view {
+        background-color: #e0f2fe;
+        color: #0ea5e9;
+    }
+
+    .btn-edit {
+        background-color: #fef9c3;
+        color: #ca8a04;
+    }
+
+    .btn-move {
+        background-color: #dcfce7;
+        color: #16a34a;
+    }
+</style>
+
+<div class="container py-5">
+
+    <div class="main-card">
+
+        <div class="card-header-custom d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1 fw-bold"><i class="bi bi-box-seam me-2"></i>Kargolarım</h2>
+                <p class="mb-0 opacity-75" style="font-size: 0.9rem;">Aktif kargo gönderilerinizi buradan takip edin.</p>
+            </div>
+            <a asp-action="Ekle" class="btn btn-add-custom">
+                <i class="bi bi-plus-lg me-1"></i> Yeni Kargo
+            </a>
+        </div>
+
+        <div class="p-4">
+            <div class="table-responsive">
+                <table class="table table-custom mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="ps-3">Kargo Adı & Alıcı</th>
+                            <th scope="col">Teslimat Adresi</th>
+                            <th scope="col">Durum</th>
+                            <th scope="col" class="text-end pe-3">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var statusClass = "primary";
+
+                            <tr>
+                                <td class="ps-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-light rounded-circle p-2 me-3 text-primary">
+                                            <i class="bi bi-box fs-5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark">@item.AliciAd</div>
+                                            <small class="text-muted">Kargo ID: #@item.KargoID</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="d-inline-block text-truncate" style="max-width: 250px;">
+                                        <i class="bi bi-geo-alt me-1 text-muted"></i> @item.AliciAdresi
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge @statusClass">
+                                        @item.Durum
+                                    </span>
+                                </td>
+                                <td class="text-end pe-3">
+                                    <a asp-controller="Kargo" asp-action="Detay" asp-route-id="@item.KargoID" class="action-btn btn-view" title="Detay" data-bs-toggle="tooltip">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+
+                                    <a asp-controller="Kargo" asp-action="Duzenle" asp-route-id="@item.KargoID" class="action-btn btn-edit" title="Düzenle" data-bs-toggle="tooltip">
+                                        <i class="bi bi-pencil-fill" style="font-size: 0.8rem;"></i>
+                                    </a>
+
+                                    <a asp-controller="Hareket" asp-action="YeniHareket" asp-route-id="@item.KargoID" class="action-btn btn-move" title="Yeni Hareket Ekle" data-bs-toggle="tooltip">
+                                        <i class="bi bi-truck"></i>
+                                    </a>
+                                    <form asp-action="Sil" asp-route-id="@item.KargoID" method="post" onsubmit="return confirm('Bu kargoyu ve tüm geçmişini silmek istediğinize emin misiniz?');" style="display:inline;">
+                                        <button type="submit" class="action-btn btn-danger text-white border-0 shadow-sm" style="background-color: #fee2e2; color: #dc2626 !important;" title="Sil">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <div class="mb-3 text-muted opacity-50">
+                        <i class="bi bi-box-seam" style="font-size: 4rem;"></i>
+                    </div>
+                    <h5 class="text-muted">Henüz hiç kargo kaydı yok.</h5>
+                    <p class="text-muted small mb-4">Sisteme yeni bir kargo ekleyerek başlayabilirsiniz.</p>
+                    <a asp-action="Ekle" class="btn btn-primary rounded-pill px-4">
+                        İlk Kargonuzu Ekleyin
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>

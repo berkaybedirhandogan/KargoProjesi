@@ -1,0 +1,287 @@
+@model KargoTakibi.Models.Kargo
+
+@{
+    ViewData["Title"] = "Kargo Takip Detayı";
+}
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --timeline-color: #e2e8f0;
+        --timeline-active: #667eea;
+    }
+
+    body {
+        background-color: #f3f4f6;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .container {
+        flex: 1 0 auto;
+    }
+
+    .detail-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        background: white;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .card-header-hero {
+        background: var(--primary-gradient);
+        padding: 2.5rem 2rem;
+        color: white;
+        position: relative;
+    }
+
+    .info-box {
+        background-color: #f8fafc;
+        border-radius: 15px;
+        padding: 1.5rem;
+        border: 1px solid #edf2f7;
+        transition: transform 0.2s;
+        height: 100%;
+    }
+
+        .info-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+            border-color: #e2e8f0;
+        }
+
+    .info-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #718096;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-value {
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 1rem;
+    }
+
+    .icon-box {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+
+    .sender-icon {
+        background: #e0e7ff;
+        color: #667eea;
+    }
+
+    .receiver-icon {
+        background: #d1fae5;
+        color: #059669;
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+        margin-top: 20px;
+    }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--timeline-color);
+        }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 2rem;
+    }
+
+    .timeline-dot {
+        position: absolute;
+        left: -30px;
+        top: 0;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid var(--timeline-active);
+        z-index: 2;
+    }
+
+    .timeline-item:first-child .timeline-dot {
+        background: var(--timeline-active);
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+    }
+
+    .timeline-date {
+        font-size: 0.85rem;
+        color: #718096;
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+    }
+
+    .timeline-content {
+        background: white;
+        padding: 1rem;
+        border-radius: 10px;
+        border: 1px solid #edf2f7;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+
+    .action-bar {
+        background: white;
+        padding: 1rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Kargo Takip Detayı</h2>
+            <p class="text-muted mb-0">Gönderi Takip No: <span class="fw-bold text-primary">#@Model.KargoID</span></p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="Hareket" asp-action="YeniHareket" asp-route-id="@Model.KargoID" class="btn btn-success rounded-pill px-4">
+                <i class="bi bi-plus-lg me-1"></i> Yeni Hareket Ekle
+            </a>
+            <a asp-controller="Hareket" asp-action="KargoHareketleri" asp-route-id="@Model.KargoID" class="btn btn-info text-white rounded-pill px-4">
+                <i class="bi bi-clock-history me-1"></i> Tüm Geçmişi Gör
+            </a>
+            <a asp-action="Index" class="btn btn-light rounded-pill px-4 border">
+                <i class="bi bi-arrow-left me-1"></i> Listeye Dön
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="detail-card">
+                <div class="card-header-hero">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="badge bg-white bg-opacity-25 border border-white border-opacity-25 mb-3">Mevcut Durum</span>
+                            <h1 class="display-6 fw-bold mb-0">@Model.Durum</h1>
+                        </div>
+                        <i class="bi bi-box-seam" style="font-size: 4rem; opacity: 0.2;"></i>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <div class="icon-box sender-icon">
+                                    <i class="bi bi-person-up"></i>
+                                </div>
+                                <h5 class="fw-bold mb-3">Gönderici</h5>
+                                <div class="mb-3">
+                                    <div class="info-label">Ad Soyad</div>
+                                    <div class="info-value">@Model.GondericiAd</div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="info-label">Lokasyon</div>
+                                    <div class="info-value">@Model.GondericiIl / @Model.GondericiIlce</div>
+                                </div>
+                                <div>
+                                    <div class="info-label">Adres</div>
+                                    <div class="text-muted small">@Model.GondericiAdresi</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <div class="icon-box receiver-icon">
+                                    <i class="bi bi-person-down"></i>
+                                </div>
+                                <h5 class="fw-bold mb-3">Alıcı</h5>
+                                <div class="mb-3">
+                                    <div class="info-label">Ad Soyad</div>
+                                    <div class="info-value">@Model.AliciAd</div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="info-label">Lokasyon</div>
+                                    <div class="info-value">@Model.AliciIl / @Model.AliciIlce</div>
+                                </div>
+                                <div>
+                                    <div class="info-label">Adres</div>
+                                    <div class="text-muted small">@Model.AliciAdresi</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4 pt-4 border-top">
+                        <div class="col-6">
+                            <small class="text-muted d-block mb-1">Gönderici Telefon</small>
+                            <span class="fw-bold"><i class="bi bi-telephone me-1 text-muted"></i> @Model.GondericiTelefonu</span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block mb-1">Alıcı Telefon</small>
+                            <span class="fw-bold"><i class="bi bi-telephone me-1 text-muted"></i> @Model.AliciTelefonu</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-bar mt-4">
+                <span class="text-muted small">Kargo bilgilerini güncellemek ister misiniz?</span>
+                <a asp-action="Duzenle" asp-route-id="@Model.KargoID" class="btn btn-warning text-white px-4 rounded-pill">
+                    <i class="bi bi-pencil me-1"></i> Bilgileri Düzenle
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="detail-card bg-light">
+                <div class="p-4">
+                    <h5 class="fw-bold mb-4">Hareket Geçmişi</h5>
+                    @if (Model.Hareketler != null && Model.Hareketler.Any())
+                    {
+                        <div class="timeline">
+                            @foreach (var hareket in Model.Hareketler.OrderByDescending(h => h.Tarih))
+                            {
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <div class="timeline-date">
+                                        <i class="bi bi-clock me-1"></i> @hareket.Tarih.ToString("dd.MM.yyyy HH:mm")
+                                    </div>
+                                    <div class="timeline-content">
+                                        <div class="fw-bold text-dark">@hareket.Durum</div>
+                                        <div class="small text-muted mt-1">İşlem başarıyla kaydedildi.</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 opacity-50">
+                            <i class="bi bi-truck-flatbed" style="font-size: 3rem;"></i>
+                            <p class="mt-2 small">Henüz hareket kaydı yok.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
